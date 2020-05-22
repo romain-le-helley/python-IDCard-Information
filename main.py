@@ -1,32 +1,68 @@
 import sys
 import cv2
-import numpy as np
 import pytesseract
 
 pytesseract.pytesseract.tesseract_cmd = "C:\\Users\\romain\\AppData\\Local\\Tesseract-OCR\\tesseract.exe"
 
-        # img = cv2.imread(sys.argv[1])
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        #
-        # #[   0          1           2           3           4          5         6       7       8        9        10       11 ]
-        # #['level', 'page_num', 'block_num', 'par_num', 'line_num', 'word_num', 'left', 'top', 'width', 'height', 'conf', 'text']
-        # boxes = pytesseract.image_to_data(img)
-        # for a,b in enumerate(boxes.splitlines()):
-        #         print(b)
-        #         if a!=0:
-        #             b = b.split()
-        #             if len(b)==12:
-        #                 x,y,w,h = int(b[6]),int(b[7]),int(b[8]),int(b[9])
-        #                 cv2.putText(img,b[11],(x,y-5),cv2.FONT_HERSHEY_SIMPLEX,1,(50,50,255),2)
-        #                 cv2.rectangle(img, (x,y), (x+w, y+h), (50, 50, 255), 2)
-        #
-        # cv2.imshow('img', img)
-        # cv2.waitKey(0)
-widthImg = 1200
-heightImg = 920
 
+def main(file):
+    img = cv2.imread(file)
+    height, width = img.shape[:2]
+    img = cv2.resize(img, (2*width, 2*height))
+
+    ret, img = cv2.threshold(img, 120, 255, cv2.THRESH_BINARY_INV)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, img = cv2.threshold(img, 254, 255, cv2.THRESH_BINARY_INV)
+
+    word = pytesseract.image_to_string(img)
+
+    if not word:
+        print("Not a word")
+        sys.exit(84)
+    word = word.split('\n')
+
+    #Nom
+    nom = word[-2].split('<<')
+    nom = nom[0][5:].replace('<', ' ')
+
+    #Prenom
+    prenom = word[-1].split('<<')[0]
+    prenom = ''.join([i for i in prenom if not i.isdigit()])
+
+    #Date
+    date = word[-1].split('<<')[-1].replace('<', '')
+    date = ''.join([i for i in date if i.isdigit()])
+    date = date[:6]
+    naissance = list()
+    naissance.append(date[:2])
+    naissance.append(date[2:4])
+    naissance.append(date[4:6])
+    return [nom, prenom, naissance]
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1]))
+
+'''
 img = cv2.imread(sys.argv[1])
+img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+#[   0          1           2           3           4          5         6       7       8        9        10       11 ]
+#['level', 'page_num', 'block_num', 'par_num', 'line_num', 'word_num', 'left', 'top', 'width', 'height', 'conf', 'text']
+boxes = pytesseract.image_to_data(img)
+for a,b in enumerate(boxes.splitlines()):
+        print(b)
+        if a!=0:
+            b = b.split()
+            if len(b)==12:
+                x,y,w,h = int(b[6]),int(b[7]),int(b[8]),int(b[9])
+                cv2.putText(img,b[11],(x,y-5),cv2.FONT_HERSHEY_SIMPLEX,1,(50,50,255),2)
+                cv2.rectangle(img, (x,y), (x+w, y+h), (50, 50, 255), 2)
+
+cv2.imshow('img', img)
+cv2.waitKey(0)
+'''
+'''
 def preProcess(img):
     imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     imgBlur = cv2.GaussianBlur(imgGray, (7,7), 1)
@@ -69,8 +105,15 @@ def getWarp(img, biggest):
     matrix = cv2.getPerspectiveTransform(pt1, pt2)
     imgOutput = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
     return imgOutput
+'''
+'''
+cv2.imshow("warp", img)
 
-img = cv2.resize(img, (widthImg, heightImg))
+
+cv2.imshow("warp222", img)
+'''
+
+'''
 imgContour = img.copy()
 imgThres = preProcess(img)
 biggest = getContours(imgThres)
@@ -79,20 +122,20 @@ if biggest.size == 0:
 imgWarp = getWarp(img, biggest)
 
 
-imgWarp = cv2.cvtColor(imgWarp, cv2.COLOR_BGR2GRAY)
-word = pytesseract.image_to_string(imgWarp)
+imgWarp = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+'''
 
-
+'''
 ret, imgWarp = cv2.threshold(imgWarp, 100, 255, cv2.THRESH_BINARY_INV)
 cv2.imshow("warp", imgWarp)
 ret, imgWarp = cv2.threshold(imgWarp, 10, 255, cv2.THRESH_BINARY_INV)
 cv2.imshow("warp222", imgWarp)
 
 word = pytesseract.image_to_string(imgWarp)
-
-if not word:
-   sys.exit(84)
+'''
+'''
 for x, y in enumerate(word.splitlines()):
     if y and not y.isspace() and y != 't':
         print(y)
 cv2.waitKey(0)
+'''
