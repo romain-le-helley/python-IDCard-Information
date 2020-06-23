@@ -86,7 +86,7 @@ def idRecognition(file):
         height = height // 2
         width = width // 2
         img = cv2.resize(img, (width, height))
-        os.remove(file)
+        os.remove(filename)
         #end here
 
     #height, width = img.shape[:2]
@@ -97,13 +97,13 @@ def idRecognition(file):
 
     imgThres = preProcess(img)
     biggest = getContours(imgThres, imgContour)
-    cv2.imshow("contour", imgContour)
+    #cv2.imshow("contour", imgContour)
 
     imgCropped = img[biggest[1]:biggest[1]+biggest[3], biggest[0]:biggest[0]+biggest[2]]
-    cv2.imshow("lol", imgCropped)
+    #cv2.imshow("lol", imgCropped)
     height, width = imgCropped.shape[:2]
     imgSize = cv2.resize(imgCropped, (width * 2, height * 2))
-    cv2.imshow("size", imgSize)
+    #cv2.imshow("size", imgSize)
 
     #imgWarp = getWarp(img, biggest)
 
@@ -123,8 +123,7 @@ def idRecognition(file):
     cv2.waitKey(0)
     allWord = pytesseract.image_to_string(imgSize)
     if not allWord:
-        print("Not a word")
-        sys.exit(84)
+        return None
     allWord = allWord.replace(' ', '')
     allWord = allWord.split('\n')
 
