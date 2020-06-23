@@ -129,7 +129,6 @@ def idRecognition(file):
     allWord = allWord.split('\n')
 
     lastword = 0
-    print(allWord)
     word = []
     for line in allWord:
         if lastword == 2:
@@ -138,7 +137,6 @@ def idRecognition(file):
             lastword += 1
             word.append(line)
 
-    print(word)
     #Nom
     nom = word[0].split('<<')
     nom = nom[0][5:].replace('<', ' ')
