@@ -67,7 +67,7 @@ def getWarp(img, biggest):
     imgOutput = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
     return imgOutput
 
-def main(file):
+def idRecognition(file):
     filename = file
     if file[-4:] == ".pdf":
         PDFfile = wi(filename=file, resolution=400)
@@ -161,5 +161,5 @@ def main(file):
     return [nom, prenom, naissance]
 
 
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1]))
+#if __name__ == "__main__":
+#    sys.exit(idRecognition(sys.argv[1]))
