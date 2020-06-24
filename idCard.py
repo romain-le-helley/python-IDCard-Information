@@ -41,22 +41,28 @@ def getContours(img, imgContour):
     contours, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     biggest = np.array([])
     maxPeri = 0
+    x, y, w, h = 0, 0, 0, 0
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area > 0:
             peri = cv2.arcLength(cnt, True)
             approx = cv2.approxPolyDP(cnt, 0.02*peri, True)
-            if (peri > maxPeri):
+            if (peri > maxPeri and len(approx) >= 4):
                 biggest = approx
                 maxPeri = peri
+                cv2.drawContours(imgContour, approx, -1, (255, 0, 0), 6)
+                x,y,w,h = cv2.boundingRect(biggest)
+                cv2.rectangle(imgContour, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    """
     for l,i in enumerate(biggest):
         for y in i:
             if (y[0] > 900 or y[1] > 900):
                 y[0] = 0
                 y[1] = 0
-    x,y,w,h = cv2.boundingRect(biggest)
-    cv2.rectangle(imgContour, (x, y), (x+w, y+h), (0, 255, 0), 2)
-    cv2.drawContours(imgContour, [biggest], -1, (255, 0, 0), 6)
+    """
+    #x,y,w,h = cv2.boundingRect(biggest)
+    #cv2.rectangle(imgContour, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    #cv2.drawContours(imgContour, [biggest], -1, (255, 0, 0), 6)
     return [x, y, w, h]
 
 def getWarp(img, biggest):
@@ -75,20 +81,20 @@ def idRecognition(file):
         ImageSequence = 1
         for img in PDFfile.sequence:
             Image = wi(image = img)
-            Image.save(filename=file[:-3] + "jpg")
+            Image.save(filename="idCard.jpg")
             ImageSequence += 1
-        filename = file[:-3] + "jpg"
+        filename = "idCard.jpg"
 
     img = cv2.imread(filename)
     if file[-4:] == ".pdf":
         #only if pdf
-        height, width = img.shape[:2]
-        height = height // 2
-        width = width // 2
-        img = cv2.resize(img, (width, height))
         os.remove(filename)
         #end here
 
+    height, width = img.shape[:2]
+    height = height // 2
+    width = width // 2
+    img = cv2.resize(img, (width, height))
     #height, width = img.shape[:2]
     #height = height // 2
     #width = width // 2
@@ -97,7 +103,7 @@ def idRecognition(file):
 
     imgThres = preProcess(img)
     biggest = getContours(imgThres, imgContour)
-    #cv2.imshow("contour", imgContour)
+   # cv2.imshow("contour", imgContour)
 
     imgCropped = img[biggest[1]:biggest[1]+biggest[3], biggest[0]:biggest[0]+biggest[2]]
     #cv2.imshow("lol", imgCropped)
@@ -130,9 +136,11 @@ def idRecognition(file):
     lastword = 0
     word = []
     for line in allWord:
+        if line == '':
+            continue
         if lastword == 2:
             break
-        if lastword == 1 or line[:5] == "IDFRA":
+        if lastword == 1 or line[:5] == "IDFRA" or line[:5] == "1DFRA":
             lastword += 1
             word.append(line)
 
@@ -149,8 +157,9 @@ def idRecognition(file):
 
     #Date
     date = word[1].split('<')[-1].replace('<', '')
+    date = date[:-3]
     date = ''.join([i for i in date if i.isdigit()])
-    date = date[:6]
+    date = date[-6:]
     naissance = list()
     naissance.append(date[:2])
     naissance.append(date[2:4])
@@ -158,5 +167,5 @@ def idRecognition(file):
     return [nom, prenom, naissance]
 
 
-#if __name__ == "__main__":
-#    sys.exit(idRecognition(sys.argv[1]))
+if __name__ == "__main__":
+    sys.exit(idRecognition(sys.argv[1]))
